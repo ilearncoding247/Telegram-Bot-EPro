@@ -1,4 +1,5 @@
-python-telegram-bot>=20.0
+python-telegram-bot==20.8
 python-dotenv
-aiosqlite
-pytz
+aiohttp
+supabase
+websockets

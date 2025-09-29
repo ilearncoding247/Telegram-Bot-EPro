@@ -23,7 +23,7 @@ def main():
         logger.info("Configuration loaded successfully")
         
         # Initialize database
-        database = Database(config.database_path)
+        database = Database()  # Supabase Database doesn't need a database path parameter
         logger.info("Database initialized")
         
         # Initialize referral system

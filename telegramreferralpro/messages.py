@@ -19,10 +19,10 @@ Click the link above to join the channel, then come back here.
 Here's your unique referral link:
 {referral_link}
 
-📋 **Your Mission:**
+📋 Your Mission:
 Share this link with friends and get {target} people to join the channel using your link to earn your reward!
 
-🔗 **How it works:**
+🔗 How it works:
 1. Copy and share your referral link with friends
 2. When they click it and join the channel, you get credit
 3. Reach {target} successful referrals to claim your reward
@@ -37,10 +37,10 @@ Use /status to check your progress anytime!
 Here's your unique referral link:
 {referral_link}
 
-📋 **Your Mission:**
+📋 Your Mission:
 Copy and share this link with friends and get {target} people to join the channel using your link to earn your reward!
 
-🔗 **How it works:**
+🔗 How it works:
 1. Copy and share your referral link with friends
 2. When they click it and join the channel, you get credit
 3. Reach {target} successful referrals to claim your reward
@@ -57,7 +57,7 @@ After joining, you'll get your own referral link to start earning rewards too!
 """
     
     STATUS_MESSAGE = """
-📊 **Your Referral Status**
+📊 Your Referral Status
 
 👥 Active Referrals: {active_referrals}/{target}
 📈 Total Referrals Made: {total_referrals}
@@ -74,7 +74,7 @@ After joining, you'll get your own referral link to start earning rewards too!
     PROGRESS_BAR_EMPTY = "⬜"
     
     REWARD_AVAILABLE = """
-🎉 **CONGRATULATIONS!** 🎉
+🎉 CONGRATULATIONS! 🎉
 
 You've reached your referral target! Your reward is ready to claim.
 
@@ -82,7 +82,7 @@ Use /claim to get your reward!
 """
     
     REWARD_CLAIMED = """
-🏆 **REWARD CLAIMED!** 🏆
+🏆 REWARD CLAIMED! 🏆
 
 {reward_message}
 
@@ -92,21 +92,21 @@ Your referral link is still active: {referral_link}
 """
     
     HELP_MESSAGE = """
-🤖 **Referral Bot Commands**
+🤖 Referral Bot Commands
 
 /start - Get your referral link and instructions
 /status - Check your referral progress
 /claim - Claim your reward (when target is reached)
 /help - Show this help message
 
-📋 **How the referral system works:**
+📋 How the referral system works:
 1. Get your unique referral link from /start
 2. Copy the link and share it with friends
 3. When friends join using your link, you get credit
 4. Reach the target number of referrals to earn rewards
 5. Use /claim to get your reward
 
-💡 **Tips:**
+💡 Tips:
 - Share your link in groups, social media, or with friends
 - Only active channel members count towards your target
 - If someone leaves the channel, they won't count anymore
@@ -136,7 +136,7 @@ Use /status to see your detailed progress.
 """
     
     ADMIN_STATS = """
-📊 **Bot Statistics**
+📊 Bot Statistics
 
 👥 Total Users: {total_users}
 🔗 Channel Members: {channel_members}

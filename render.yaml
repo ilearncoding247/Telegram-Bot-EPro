@@ -1,0 +1,24 @@
+# render.yaml
+# This file tells Render how to build and run your Telegram bot.
+
+services:
+  - type: web # 'web' type is used for long-running services, even non-HTTP ones.
+    name: telegram-referral-bot
+    env: python
+    plan: free # Or 'starter' for better performance
+    
+    # A persistent disk to store the SQLite database.
+    # The data will persist across deploys and restarts.
+    disks:
+      - name: bot-data
+        mountPath: /var/data
+        sizeGB: 1 # 1 GB is the smallest size and plenty for a SQLite DB.
+
+    # Commands to run on build.
+    buildCommand: "pip install -r requirements.txt"
+
+    # Command to start the bot. Using the recommended simple runner.
+    startCommand: "python run_bot_simple.py"
+
+    # Environment variables can be set in the Render dashboard.
+    # We will set DATABASE_PATH to point to our persistent disk.

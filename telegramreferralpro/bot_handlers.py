@@ -5,6 +5,7 @@ from telegram.constants import ParseMode
 from .database import Database
 from .referral_system import ReferralSystem
 from .messages import Messages
+from .supabase_utils import send_task_update_to_supabase
 from .utils import TelegramUtils, setup_logging, escape_markdown
 from .config import BotConfig
 from .languages import LanguageManager, MultilingualMessages, SupportedLanguage
@@ -68,107 +69,28 @@ class BotHandlers:
         
         # Send appropriate welcome message
         if is_member:
-            await self._send_member_welcome_multilingual(update, existing_user, user_lang)
+            await self._send_simple_welcome(update, existing_user, user_lang)
         else:
             if referral_code:
                 await self._send_referral_welcome_multilingual(update, user_lang)
             else:
                 await self._send_new_user_welcome_multilingual(update, user_lang)
-    
-    async def _send_new_user_welcome_multilingual(self, update: Update, user_lang: str) -> None:
-        """Send multilingual welcome message to new users"""
-        if not update.message:
-            return
-        channel_link = escape_markdown(self.telegram_utils.get_channel_link())
-        message = self.multilingual_messages.get_message(
-            user_lang, "welcome_new_user", channel_link=channel_link
-        )
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
-    
-    async def _send_referral_welcome_multilingual(self, update: Update, user_lang: str) -> None:
-        """Send multilingual welcome message to referred users"""
-        if not update.message:
-            return
-        channel_link = escape_markdown(self.telegram_utils.get_channel_link())
-        message = self.multilingual_messages.get_message(
-            user_lang, "referral_welcome", channel_link=channel_link
-        )
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
-    
-    async def _send_member_welcome_multilingual(self, update: Update, user_data, user_lang: str) -> None:
-        """Send multilingual welcome message to existing channel members"""
+
+    async def _send_simple_welcome(self, update: Update, user_data, user_lang: str) -> None:
+        """Send a simple welcome message to existing channel members"""
         if not update.message or not user_data:
             return
         chat_info = await self.telegram_utils.get_chat_info()
         channel_name = escape_markdown(chat_info['title']) if chat_info else "our channel"
-        
-        # Get or create unique invite link for this user
-        stored_invite_link = self.db.get_invite_link(user_data['user_id'])
-        if stored_invite_link:
-            invite_link = escape_markdown(stored_invite_link)
-        else:
-            # Create new unique invite link
-            referral_code = user_data['referral_code']
-            invite_link_name = f"Referral-{referral_code}"
-            raw_invite_link = await self.telegram_utils.create_unique_invite_link(name=invite_link_name)
-            invite_link = escape_markdown(raw_invite_link)
-            
-            # Store the invite link in database
-            self.db.store_invite_link(user_data['user_id'], referral_code, raw_invite_link, invite_link_name)
-        
+
+        # Get current referral target
+        referral_target = self.referral_system.get_active_referral_target()
+
         message = self.multilingual_messages.get_message(
             user_lang, "welcome_existing_member",
             channel_name=channel_name,
-            referral_link=invite_link,
-            target=self.config.referral_target
-        )
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
-
-    # Keep the old methods for backward compatibility
-    async def _send_new_user_welcome(self, update: Update) -> None:
-        """Send welcome message to new users"""
-        if not update.message:
-            return
-        channel_link = self.telegram_utils.get_channel_link()
-        message = self.messages.WELCOME_NEW_USER.format(
-            channel_link=channel_link
-        )
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
-    
-    async def _send_referral_welcome(self, update: Update) -> None:
-        """Send welcome message to referred users"""
-        if not update.message:
-            return
-        channel_link = self.telegram_utils.get_channel_link()
-        message = self.messages.REFERRAL_WELCOME.format(
-            channel_link=channel_link
-        )
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
-    
-    async def _send_member_welcome(self, update: Update, user_data) -> None:
-        """Send welcome message to existing channel members"""
-        if not update.message or not user_data:
-            return
-        chat_info = await self.telegram_utils.get_chat_info()
-        channel_name = chat_info['title'] if chat_info else "our channel"
-        
-        # Get or create unique invite link for this user
-        stored_invite_link = self.db.get_invite_link(user_data['user_id'])
-        if stored_invite_link:
-            invite_link = stored_invite_link
-        else:
-            # Create new unique invite link
-            referral_code = user_data['referral_code']
-            invite_link_name = f"Referral-{referral_code}"
-            invite_link = await self.telegram_utils.create_unique_invite_link(name=invite_link_name)
-            
-            # Store the invite link in database
-            self.db.store_invite_link(user_data['user_id'], referral_code, invite_link, invite_link_name)
-        
-        message = self.messages.WELCOME_EXISTING_MEMBER.format(
-            channel_name=channel_name,
-            referral_link=invite_link,
-            target=self.config.referral_target
+            referral_link=f"https://t.me/{self.config.channel_username}?start={user_data['referral_code']}",
+            target=referral_target
         )
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
     
@@ -198,7 +120,7 @@ class BotHandlers:
             return
         
         # Get referral progress
-        progress = self.referral_system.get_referral_progress(user_id, self.config.referral_target)
+        progress = self.referral_system.get_referral_progress(user_id)
         
         # Generate progress bar
         progress_bar_full = self.multilingual_messages.get_message(user_lang, "progress_bar_full")
@@ -231,18 +153,11 @@ class BotHandlers:
         keyboard = [
             [
                 InlineKeyboardButton("🔄 Refresh", callback_data="refresh_status"),
-                InlineKeyboardButton("📊 My Link", callback_data="my_link"),
-            ],
-            [
-                InlineKeyboardButton("🏆 Claim Reward", callback_data="claim_reward"),
                 InlineKeyboardButton("❓ Help", callback_data="help"),
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text(message, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-    async def language_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        # ...existing code for language selection...
-        pass
 
     async def button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle inline keyboard button callbacks"""
@@ -257,12 +172,12 @@ class BotHandlers:
         logger.info(f"Button callback received: {query.data} from user {user_id}")
         await query.answer()
         
-        if query.data == "my_status":
-            # Show current status
-            await self._show_status_inline(query, user_id, user_lang)
-        elif query.data == "refresh_status":
+        if query.data == "refresh_status":
             # Refresh and show updated status
             await self._show_status_inline(query, user_id, user_lang)
+        elif query.data == "my_link":
+            # Show user's referral link
+            await self._show_referral_link_inline(query, user_id, user_lang)
         elif query.data == "claim_reward":
             # Handle reward claiming
             await self._handle_claim_inline(query, user_id, user_lang)
@@ -275,16 +190,16 @@ class BotHandlers:
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             await query.edit_message_text(message, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-        elif query.data == "my_link":
-            # Show user's referral link
-            await self._show_referral_link_inline(query, user_id, user_lang)
         elif query.data == "share_success":
-            # Handle success sharing
+            # Handle success sharing - show status
+            await self._show_status_inline(query, user_id, user_lang)
+        elif query.data == "back_to_status":
+            # Back to status from other views
             await self._show_status_inline(query, user_id, user_lang)
         else:
             logger.warning(f"Unknown callback data: {query.data}")
             await query.edit_message_text("Unknown action.")
-    
+
     async def _show_status_inline(self, query, user_id: int, user_lang: str) -> None:
         """Show status message inline"""
         try:
@@ -306,7 +221,7 @@ class BotHandlers:
                 return
             
             # Get referral progress
-            progress = self.referral_system.get_referral_progress(user_id, self.config.referral_target)
+            progress = self.referral_system.get_referral_progress(user_id)
             
             # Generate progress bar
             progress_bar_full = self.multilingual_messages.get_message(user_lang, "progress_bar_full")
@@ -353,7 +268,7 @@ class BotHandlers:
         except Exception as e:
             logger.error(f"Error in _show_status_inline: {e}")
             await query.edit_message_text("❌ An error occurred. Please try again.")
-    
+
     async def _handle_claim_inline(self, query, user_id: int, user_lang: str) -> None:
         """Handle reward claiming inline"""
         try:
@@ -381,8 +296,8 @@ class BotHandlers:
                 return
             
             # Check if target reached
-            if not self.referral_system.check_referral_target_reached(user_id, self.config.referral_target):
-                progress = self.referral_system.get_referral_progress(user_id, self.config.referral_target)
+            if not self.referral_system.check_referral_target_reached(user_id):
+                progress = self.referral_system.get_referral_progress(user_id)
                 message = self.multilingual_messages.get_message(
                     user_lang, "error_reward_not_available",
                     active_referrals=progress['active_referrals'],
@@ -398,6 +313,9 @@ class BotHandlers:
             
             # Claim reward
             self.db.mark_reward_claimed(user_id)
+            
+            # Mark target reached timestamp
+            self.db.mark_target_reached(user_id)
             
             # Get user's stored invite link
             stored_invite_link = self.db.get_invite_link(user_id)
@@ -416,12 +334,22 @@ class BotHandlers:
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
+            # Send update to Supabase
+            task_key = f"tg_referral_{progress['target']}"
+            await send_task_update_to_supabase(
+                config=self.config,
+                telegram_id=user_id,
+                task_key=task_key,
+                status="completed",
+                meta={"referrals_reached": progress['target']}
+            )
+
             await query.edit_message_text(message, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
             logger.info(f"User {user_id} claimed their reward via inline button")
         except Exception as e:
             logger.error(f"Error in _handle_claim_inline: {e}")
             await query.edit_message_text("❌ An error occurred. Please try again.")
-    
+
     async def _show_referral_link_inline(self, query, user_id: int, user_lang: str) -> None:
         """Show user's referral link inline"""
         try:
@@ -444,6 +372,9 @@ class BotHandlers:
                 # Store the invite link in database
                 self.db.store_invite_link(user_id, referral_code, invite_link, invite_link_name)
             
+            # Get current referral target
+            referral_target = self.referral_system.get_active_referral_target()
+
             message = f"""
 🔗 **Your Unique Referral Link**
 
@@ -453,7 +384,7 @@ class BotHandlers:
 1. Copy the link above
 2. Share it with friends
 3. When they join using your link, you get credit
-4. Reach {self.config.referral_target} referrals to claim your reward!
+4. Reach {referral_target} referrals to claim your reward!
 
 💡 **Tip:** Share this link in groups, social media, or directly with friends!
 """
@@ -486,8 +417,8 @@ class BotHandlers:
             await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
             return
         # Check if target reached
-        if not self.referral_system.check_referral_target_reached(user_id, self.config.referral_target):
-            progress = self.referral_system.get_referral_progress(user_id, self.config.referral_target)
+        if not self.referral_system.check_referral_target_reached(user_id):
+            progress = self.referral_system.get_referral_progress(user_id)
             message = self.messages.ERROR_REWARD_NOT_AVAILABLE.format(
                 active_referrals=progress['active_referrals'],
                 target=progress['target']
@@ -496,6 +427,8 @@ class BotHandlers:
             return
         # Claim reward
         self.db.mark_reward_claimed(user_id)
+        # Mark target reached timestamp
+        self.db.mark_target_reached(user_id)
         # Get user's stored invite link
         stored_invite_link = self.db.get_invite_link(user_id)
         invite_link = stored_invite_link or self.telegram_utils.get_channel_link()
@@ -503,6 +436,17 @@ class BotHandlers:
             reward_message=self.config.reward_message,
             referral_link=invite_link
         )
+
+        # Send update to Supabase
+        task_key = f"tg_referral_{progress['target']}"
+        await send_task_update_to_supabase(
+            config=self.config,
+            telegram_id=user_id,
+            task_key=task_key,
+            status="completed",
+            meta={"referrals_reached": progress['target']}
+        )
+
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
         logger.info(f"User {user_id} claimed their reward")
     
@@ -637,12 +581,14 @@ class BotHandlers:
                     channel_name = chat_info['title'] if chat_info else "our channel"
                     # Multilingual welcome message
                     user_lang = self.language_manager.get_user_language(user_id)
+                    # Get current referral target
+                    referral_target = self.referral_system.get_active_referral_target()
                     message = self.multilingual_messages.get_message(
                         user_lang,
                         "channel_joined_success",
                         channel_name=channel_name,
                         referral_link=referral_link,
-                        target=self.config.referral_target
+                        target=referral_target
                     )
                     await self.telegram_utils.send_message_safe(user_id, message)
 
@@ -650,7 +596,7 @@ class BotHandlers:
                     if referrer_id:
                         referrer = self.db.get_user(referrer_id)
                         if referrer:
-                            progress = self.referral_system.get_referral_progress(referrer_id, self.config.referral_target)
+                            progress = self.referral_system.get_referral_progress(referrer_id)
                             if progress['target_reached'] and not referrer['reward_claimed']:
                                 notify_message = self.messages.REWARD_AVAILABLE
                             else:
@@ -672,7 +618,7 @@ class BotHandlers:
             # Notify referrers about the change
             for ref_id in affected_referrers:
                 try:
-                    progress = self.referral_system.get_referral_progress(ref_id, self.config.referral_target)
+                    progress = self.referral_system.get_referral_progress(ref_id)
                     notify_message = (
                         "📉 One of your referrals left the channel.\n\n"
                         f"Your current progress: {progress['active_referrals']}/{progress['target']}"
@@ -691,7 +637,7 @@ class BotHandlers:
             CommandHandler("language", self.language_command),
             CommandHandler("admin_stats", self.admin_stats_command),
             # Handle all button callbacks first
-            CallbackQueryHandler(self.button_callback, pattern="^(refresh_status|claim_reward|help|my_link|share_success)$"),
+            CallbackQueryHandler(self.button_callback, pattern="^(refresh_status|claim_reward|help|my_link|share_success|back_to_status)$"),
             # Handle language selection callbacks
             CallbackQueryHandler(self.language_callback, pattern="^lang_"),
             # Handle chat member updates

@@ -21,6 +21,8 @@ class BotConfig:
     reward_message: str = "🎉 Congratulations! You've reached your referral target and earned your reward!"
     database_path: str = "bot_database.db"
     webhook_url: Optional[str] = None
+    supabase_webhook_url: Optional[str] = None
+    supabase_webhook_secret: Optional[str] = None
     port: int = 8000
 
 def load_config() -> BotConfig:
@@ -41,7 +43,10 @@ def load_config() -> BotConfig:
     admin_user_ids = [int(uid.strip()) for uid in admin_user_ids if uid.strip().isdigit()]
     
     referral_target = int(os.getenv("REFERRAL_TARGET", "5"))
-    reward_message = os.getenv("REWARD_MESSAGE", "🎉 Congratulations! You've reached your referral target and earned your reward!")
+    reward_message = os.getenv("REWARD_MESSAGE", "🎉 Congratulations! Login to Earnpro.org to claim reward!")
+    
+    # Allow database path to be configured via environment variable for production
+    database_path = os.getenv("DATABASE_PATH", "bot_database.db")
     
     return BotConfig(
         bot_token=bot_token,
@@ -50,6 +55,9 @@ def load_config() -> BotConfig:
         admin_user_ids=admin_user_ids,
         referral_target=referral_target,
         reward_message=reward_message,
+        database_path=database_path,
+        supabase_webhook_url=os.getenv("SUPABASE_WEBHOOK_URL"),
+        supabase_webhook_secret=os.getenv("SUPABASE_WEBHOOK_SECRET"),
         webhook_url=os.getenv("WEBHOOK_URL"),
         port=int(os.getenv("PORT", "8000"))
     )

@@ -1,128 +1,44 @@
-import sqlite3
+from .supabase_client import supabase
+from typing import Optional, Tuple
 import logging
-from datetime import datetime
-from typing import Optional, List, Tuple
-from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
 class Database:
-    def __init__(self, db_path: str):
-        self.db_path = db_path
-        self.init_database()
-    
-    def init_database(self):
-        """Initialize database tables"""
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            
-            # Users table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
-                    username TEXT,
-                    first_name TEXT,
-                    last_name TEXT,
-                    referral_code TEXT UNIQUE,
-                    referred_by INTEGER,
-                    join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    is_channel_member BOOLEAN DEFAULT FALSE,
-                    reward_claimed BOOLEAN DEFAULT FALSE,
-                    FOREIGN KEY (referred_by) REFERENCES users (user_id)
-                )
-            ''')
-            
-            # Referrals table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS referrals (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    referrer_id INTEGER,
-                    referred_user_id INTEGER,
-                    join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    is_active BOOLEAN DEFAULT TRUE,
-                    FOREIGN KEY (referrer_id) REFERENCES users (user_id),
-                    FOREIGN KEY (referred_user_id) REFERENCES users (user_id),
-                    UNIQUE(referrer_id, referred_user_id)
-                )
-            ''')
-            
-            # Channel events table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS channel_events (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER,
-                    event_type TEXT,
-                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES users (user_id)
-                )
-            ''')
-            
-            # Invite links table to track unique invite links
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS invite_links (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER,
-                    referral_code TEXT,
-                    invite_link TEXT UNIQUE,
-                    invite_link_name TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    is_active BOOLEAN DEFAULT TRUE,
-                    FOREIGN KEY (user_id) REFERENCES users (user_id)
-                )
-            ''')
-            
-            conn.commit()
-            logger.info("Database initialized successfully")
-    
-    @contextmanager
-    def get_connection(self):
-        """Context manager for database connections"""
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        try:
-            yield conn
-        except Exception as e:
-            conn.rollback()
-            logger.error(f"Database error: {e}")
-            raise
-        finally:
-            conn.close()
+    def __init__(self):
+        self.client = supabase
     
     def add_user(self, user_id: int, username: str = None, first_name: str = None, 
                  last_name: str = None, referral_code: str = None, referred_by: int = None) -> bool:
         """Add a new user to the database"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    INSERT OR REPLACE INTO users 
-                    (user_id, username, first_name, last_name, referral_code, referred_by)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (user_id, username, first_name, last_name, referral_code, referred_by))
-                conn.commit()
-                return True
+            self.client.table("users").insert({
+                "user_id": user_id,
+                "username": username,
+                "first_name": first_name,
+                "last_name": last_name,
+                "referral_code": referral_code,
+                "referred_by": referred_by
+            }).execute()
+            return True
         except Exception as e:
             logger.error(f"Error adding user {user_id}: {e}")
             return False
     
-    def get_user(self, user_id: int) -> Optional[sqlite3.Row]:
+    def get_user(self, user_id: int) -> Optional[dict]:
         """Get user by ID"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('SELECT * FROM users WHERE user_id = ?', (user_id,))
-                return cursor.fetchone()
+            response = self.client.table("users").select("*").eq("user_id", user_id).execute()
+            return response.data[0] if response.data else None
         except Exception as e:
             logger.error(f"Error getting user {user_id}: {e}")
             return None
     
-    def get_user_by_referral_code(self, referral_code: str) -> Optional[sqlite3.Row]:
+    def get_user_by_referral_code(self, referral_code: str) -> Optional[dict]:
         """Get user by referral code"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('SELECT * FROM users WHERE referral_code = ?', (referral_code,))
-                return cursor.fetchone()
+            response = self.client.table("users").select("*").eq("referral_code", referral_code).execute()
+            return response.data[0] if response.data else None
         except Exception as e:
             logger.error(f"Error getting user by referral code {referral_code}: {e}")
             return None
@@ -130,13 +46,8 @@ class Database:
     def update_channel_membership(self, user_id: int, is_member: bool) -> bool:
         """Update user's channel membership status"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    UPDATE users SET is_channel_member = ? WHERE user_id = ?
-                ''', (is_member, user_id))
-                conn.commit()
-                return True
+            self.client.table("users").update({"is_channel_member": is_member}).eq("user_id", user_id).execute()
+            return True
         except Exception as e:
             logger.error(f"Error updating channel membership for user {user_id}: {e}")
             return False
@@ -144,14 +55,13 @@ class Database:
     def add_referral(self, referrer_id: int, referred_user_id: int) -> bool:
         """Add a referral relationship"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    INSERT OR IGNORE INTO referrals (referrer_id, referred_user_id)
-                    VALUES (?, ?)
-                ''', (referrer_id, referred_user_id))
-                conn.commit()
-                return cursor.rowcount > 0
+            # Add is_active field with default value True
+            self.client.table("referrals").insert({
+                "referrer_id": referrer_id,
+                "referred_id": referred_user_id,
+                "is_active": True  # Add this field
+            }).execute()
+            return True
         except Exception as e:
             logger.error(f"Error adding referral: {e}")
             return False
@@ -159,24 +69,21 @@ class Database:
     def get_referral_stats(self, user_id: int) -> Tuple[int, int]:
         """Get referral statistics for a user (active referrals, total referrals)"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                
-                # Active referrals (users still in channel)
-                cursor.execute('''
-                    SELECT COUNT(*) FROM referrals r
-                    JOIN users u ON r.referred_user_id = u.user_id
-                    WHERE r.referrer_id = ? AND r.is_active = TRUE AND u.is_channel_member = TRUE
-                ''', (user_id,))
-                active_count = cursor.fetchone()[0]
-                
-                # Total referrals ever made
-                cursor.execute('''
-                    SELECT COUNT(*) FROM referrals WHERE referrer_id = ?
-                ''', (user_id,))
-                total_count = cursor.fetchone()[0]
-                
-                return active_count, total_count
+            # First try to get stats with is_active column
+            try:
+                response = self.client.table("referrals").select("id").eq("referrer_id", user_id).execute()
+                total_count = len(response.data)
+
+                response = self.client.table("referrals").select("id").eq("referrer_id", user_id).eq("is_active", True).execute()
+                active_count = len(response.data)
+            except Exception as e:
+                # Fallback if is_active column doesn't exist yet
+                logger.warning(f"is_active column not found, using fallback method: {e}")
+                response = self.client.table("referrals").select("id").eq("referrer_id", user_id).execute()
+                total_count = len(response.data)
+                active_count = total_count  # Assume all are active if column doesn't exist
+            
+            return active_count, total_count
         except Exception as e:
             logger.error(f"Error getting referral stats for user {user_id}: {e}")
             return 0, 0
@@ -184,14 +91,13 @@ class Database:
     def deactivate_referral(self, referrer_id: int, referred_user_id: int) -> bool:
         """Deactivate a referral when user leaves channel"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    UPDATE referrals SET is_active = FALSE 
-                    WHERE referrer_id = ? AND referred_user_id = ?
-                ''', (referrer_id, referred_user_id))
-                conn.commit()
-                return True
+            # Try to update with is_active field
+            try:
+                self.client.table("referrals").update({"is_active": False}).eq("referrer_id", referrer_id).eq("referred_id", referred_user_id).execute()
+            except Exception as e:
+                # Fallback if is_active column doesn't exist yet
+                logger.warning(f"Could not update is_active column: {e}")
+            return True
         except Exception as e:
             logger.error(f"Error deactivating referral: {e}")
             return False
@@ -199,97 +105,95 @@ class Database:
     def mark_reward_claimed(self, user_id: int) -> bool:
         """Mark reward as claimed for a user"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    UPDATE users SET reward_claimed = TRUE WHERE user_id = ?
-                ''', (user_id,))
-                conn.commit()
-                return True
+            self.client.table("users").update({"reward_claimed": True}).eq("user_id", user_id).execute()
+            return True
         except Exception as e:
             logger.error(f"Error marking reward claimed for user {user_id}: {e}")
-            return False
-    
-    def log_channel_event(self, user_id: int, event_type: str) -> bool:
-        """Log channel events (join/leave)"""
-        try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    INSERT INTO channel_events (user_id, event_type)
-                    VALUES (?, ?)
-                ''', (user_id, event_type))
-                conn.commit()
-                return True
-        except Exception as e:
-            logger.error(f"Error logging channel event: {e}")
             return False
     
     def get_all_users_count(self) -> int:
         """Get total number of users"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('SELECT COUNT(*) FROM users')
-                return cursor.fetchone()[0]
+            response = self.client.table("users").select("id", count="exact").execute()
+            return response.count
         except Exception as e:
             logger.error(f"Error getting user count: {e}")
             return 0
-    
+
     def get_channel_members_count(self) -> int:
         """Get number of active channel members"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('SELECT COUNT(*) FROM users WHERE is_channel_member = TRUE')
-                return cursor.fetchone()[0]
+            response = self.client.table("users").select("id", count="exact").eq("is_channel_member", True).execute()
+            return response.count
         except Exception as e:
             logger.error(f"Error getting channel members count: {e}")
             return 0
     
-    def store_invite_link(self, user_id: int, referral_code: str, invite_link: str, invite_link_name: str) -> bool:
-        """Store a user's unique invite link"""
+    def get_active_referral_target(self) -> Optional[int]:
+        """Get the current active referral target from referral_targets table"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    INSERT OR REPLACE INTO invite_links 
-                    (user_id, referral_code, invite_link, invite_link_name)
-                    VALUES (?, ?, ?, ?)
-                ''', (user_id, referral_code, invite_link, invite_link_name))
-                conn.commit()
-                return True
+            # First try to get the active referral target ID from settings
+            settings_response = self.client.table("settings").select("value").eq("key", "active_referral_target_id").execute()
+            if settings_response.data:
+                target_id = int(settings_response.data[0]["value"])
+                
+                # Get the target level from referral_targets table
+                target_response = self.client.table("referral_targets").select("target_level").eq("id", target_id).eq("is_active", True).execute()
+                if target_response.data:
+                    return target_response.data[0]["target_level"]
+            
+            # Fallback to old method
+            response = self.client.table("settings").select("value").eq("key", "referral_target").execute()
+            if response.data:
+                return int(response.data[0]["value"])
+            
+            return None
         except Exception as e:
-            logger.error(f"Error storing invite link for user {user_id}: {e}")
+            logger.error(f"Error getting active referral target: {e}")
+            return None
+    
+    def get_setting(self, key: str) -> Optional[str]:
+        """Get a setting value by key"""
+        try:
+            response = self.client.table("settings").select("value").eq("key", key).execute()
+            return response.data[0]["value"] if response.data else None
+        except Exception as e:
+            logger.error(f"Error getting setting {key}: {e}")
+            return None
+    
+    def get_referral_target_by_id(self, target_id: int) -> Optional[dict]:
+        """Get referral target by ID"""
+        try:
+            response = self.client.table("referral_targets").select("*").eq("id", target_id).eq("is_active", True).execute()
+            return response.data[0] if response.data else None
+        except Exception as e:
+            logger.error(f"Error getting referral target {target_id}: {e}")
+            return None
+    
+    def get_all_referral_targets(self) -> list:
+        """Get all active referral targets"""
+        try:
+            response = self.client.table("referral_targets").select("*").eq("is_active", True).order("target_level").execute()
+            return response.data
+        except Exception as e:
+            logger.error(f"Error getting referral targets: {e}")
+            return []
+    
+    def update_user_referral_target(self, user_id: int, target_id: int) -> bool:
+        """Update user's referral target"""
+        try:
+            self.client.table("users").update({"referral_target_id": target_id}).eq("user_id", user_id).execute()
+            return True
+        except Exception as e:
+            logger.error(f"Error updating user {user_id} referral target: {e}")
             return False
     
-    def get_invite_link(self, user_id: int) -> Optional[str]:
-        """Get user's stored invite link"""
+    def mark_target_reached(self, user_id: int) -> bool:
+        """Mark that user has reached their referral target"""
         try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    SELECT invite_link FROM invite_links 
-                    WHERE user_id = ? AND is_active = TRUE 
-                    ORDER BY created_at DESC LIMIT 1
-                ''', (user_id,))
-                result = cursor.fetchone()
-                return result[0] if result else None
+            from datetime import datetime
+            self.client.table("users").update({"target_reached_at": datetime.utcnow().isoformat()}).eq("user_id", user_id).execute()
+            return True
         except Exception as e:
-            logger.error(f"Error getting invite link for user {user_id}: {e}")
-            return None
-    
-    def get_referrer_by_invite_link_name(self, invite_link_name: str) -> Optional[int]:
-        """Get referrer user ID by invite link name"""
-        try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    SELECT user_id FROM invite_links 
-                    WHERE invite_link_name = ? AND is_active = TRUE
-                ''', (invite_link_name,))
-                result = cursor.fetchone()
-                return result[0] if result else None
-        except Exception as e:
-            logger.error(f"Error getting referrer by invite link name {invite_link_name}: {e}")
-            return None
+            logger.error(f"Error marking target reached for user {user_id}: {e}")
+            return False

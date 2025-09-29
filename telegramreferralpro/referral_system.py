@@ -18,19 +18,21 @@ class ReferralSystem:
         hash_code = hashlib.sha256(raw_code.encode()).hexdigest()[:12]
         return f"ref_{hash_code}"
     
-    async def create_referral_invite_link(self, telegram_utils, user_id: int, referral_code: str) -> str:
-        """Create a unique channel invite link for referrals"""
+    def get_active_referral_target(self) -> int:
+        """Get the current active referral target from database"""
         try:
-            # Create a unique invite link with the user's referral code as the name
-            invite_link = await telegram_utils.create_unique_invite_link(
-                name=f"Referral-{referral_code}"
-            )
-            return invite_link
+            # Try to get from referral_targets table first
+            target = self.db.get_active_referral_target()
+            if target:
+                return target
+            
+            # Fallback to settings table
+            target = self.db.get_setting('referral_target')
+            return int(target) if target else 5
         except Exception as e:
-            logger.error(f"Error creating referral invite link for user {user_id}: {e}")
-            # Fallback to regular channel link
-            return telegram_utils.get_channel_link()
-    
+            logger.error(f"Error getting referral target: {e}")
+            return 5
+
     def process_referral(self, referrer_code: str, new_user_id: int) -> Tuple[bool, str]:
         """Process a new referral"""
         try:
@@ -76,13 +78,15 @@ class ReferralSystem:
             logger.error(f"Error extracting referral code from invite link: {e}")
             return None
     
-    def check_referral_target_reached(self, user_id: int, target: int) -> bool:
+    def check_referral_target_reached(self, user_id: int) -> bool:
         """Check if user has reached their referral target"""
+        target = self.get_active_referral_target()
         active_referrals, _ = self.db.get_referral_stats(user_id)
         return active_referrals >= target
     
-    def get_referral_progress(self, user_id: int, target: int) -> dict:
+    def get_referral_progress(self, user_id: int) -> dict:
         """Get detailed referral progress for a user"""
+        target = self.get_active_referral_target()
         active_referrals, total_referrals = self.db.get_referral_stats(user_id)
         
         return {
@@ -124,7 +128,7 @@ class ReferralSystem:
         try:
             # Update user's channel membership
             self.db.update_channel_membership(user_id, True)
-            self.db.log_channel_event(user_id, 'joined')
+
             
             # If this user was referred, activate the referral
             user = self.db.get_user(user_id)
