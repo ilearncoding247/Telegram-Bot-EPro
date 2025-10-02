@@ -145,3 +145,19 @@ If you encounter any issues:
 2. Verify all credentials are correct
 3. Ensure your bot has proper permissions in the channel
 4. Make sure your channel is public and accessible
+
+
+env
+SUPABASE_URL=https://bmtaqilpuszwoshtizmq.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdGFxaWxwdXN6d29zaHRpem1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwOTQwNjQsImV4cCI6MjA2ODY3MDA2NH0.QdtF2IFukonNWslwkUV1oQbpYBgdYhtekvjCywKR0vA
+BOT_TOKEN=7595389836:AAF709eAbdl0oQlSLmjY6_lxsLOlhQZ6H3M
+CHANNEL_ID=-1002713207409
+CHANNEL_USERNAME=EarnProElites
+ADMIN_USER_IDS=6754566064,6012843412
+REFERRAL_TARGET=5
+REWARD_MESSAGE=🎉 Congratulations! You've earned your reward!
+SUPABASE_WEBHOOK_URL=https://<bmtaqilpuszwoshtizmq>.functions.supabase.co/telegram-task-update
+SUPABASE_WEBHOOK_SECRET=Akweleyannang@1
+VITE_TG_BOT_API_BASE=http://localhost:8080
+VITE_TG_BOT_API_BASE=https://api.earnpro.org
+TELEGRAM_WEBHOOK_SECRET=Akweleyannang@1

@@ -12,14 +12,21 @@ class Database:
                  last_name: str = None, referral_code: str = None, referred_by: int = None) -> bool:
         """Add a new user to the database"""
         try:
-            self.client.table("users").insert({
-                "user_id": user_id,
-                "username": username,
-                "first_name": first_name,
-                "last_name": last_name,
+            # Map to actual database schema
+            user_data = {
                 "referral_code": referral_code,
-                "referred_by": referred_by
-            }).execute()
+            }
+            
+            # Add referred_by only if provided
+            if referred_by is not None:
+                user_data["referred_by"] = referred_by
+            
+            # Store additional user info in a separate field or handle differently
+            # For now, we'll store user_id in the referral_code prefix for tracking
+            if user_id and not referral_code:
+                user_data["referral_code"] = f"user_{user_id}_ref"
+            
+            self.client.table("users").insert(user_data).execute()
             return True
         except Exception as e:
             logger.error(f"Error adding user {user_id}: {e}")
@@ -28,8 +35,15 @@ class Database:
     def get_user(self, user_id: int) -> Optional[dict]:
         """Get user by ID"""
         try:
-            response = self.client.table("users").select("*").eq("user_id", user_id).execute()
-            return response.data[0] if response.data else None
+            # Since we don't have user_id column, we'll search by referral_code pattern
+            # This is a workaround for the current schema
+            response = self.client.table("users").select("*").like("referral_code", f"user_{user_id}_%").execute()
+            if response.data:
+                user = response.data[0]
+                # Add user_id to the returned data for compatibility
+                user["user_id"] = user_id
+                return user
+            return None
         except Exception as e:
             logger.error(f"Error getting user {user_id}: {e}")
             return None
@@ -38,7 +52,17 @@ class Database:
         """Get user by referral code"""
         try:
             response = self.client.table("users").select("*").eq("referral_code", referral_code).execute()
-            return response.data[0] if response.data else None
+            if response.data:
+                user = response.data[0]
+                # Extract user_id from referral_code if it follows our pattern
+                if referral_code.startswith("user_") and "_ref" in referral_code:
+                    try:
+                        user_id_str = referral_code.split("_")[1]
+                        user["user_id"] = int(user_id_str)
+                    except:
+                        user["user_id"] = None
+                return user
+            return None
         except Exception as e:
             logger.error(f"Error getting user by referral code {referral_code}: {e}")
             return None

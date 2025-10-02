@@ -30,9 +30,8 @@ async def test_bot_configuration():
         
         # Test 2: Database initialization
         print("\n2. Testing database initialization...")
-        database = Database(config.database_path)
+        database = Database()  # Supabase Database doesn't need a database path parameter
         print(f"   ✅ Database initialized successfully")
-        print(f"   💾 Database path: {config.database_path}")
         
         # Test 3: Referral system initialization
         print("\n3. Testing referral system...")
@@ -66,7 +65,7 @@ async def test_bot_configuration():
         
         # Test 6: Test referral progress
         print("\n6. Testing referral progress...")
-        progress = referral_system.get_referral_progress(test_user_id, config.referral_target)
+        progress = referral_system.get_referral_progress(test_user_id)
         print(f"   ✅ Progress calculated: {progress['active_referrals']}/{progress['target']} referrals")
         
         print("\n🎉 All basic tests passed! The bot configuration is working correctly.")
