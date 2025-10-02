@@ -58,7 +58,10 @@ def main():
         else:
             # Polling mode
             logger.info("Starting bot in polling mode")
-            application.run_polling(allowed_updates=["message", "chat_member"])
+            application.run_polling(
+                allowed_updates=["message", "chat_member"],
+                drop_pending_updates=True
+            )
     
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
