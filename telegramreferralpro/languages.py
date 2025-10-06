@@ -401,7 +401,7 @@ Partagez ce lien avec des amis et obtenez {target} personnes pour rejoindre la c
 Utilisez /status pour vérifier votre progression à tout moment !
 """,
             "channel_joined_success": """
-✅ Génial ! Vous avez rejoint avec succès {channel_name} !
+✅ Génial ! Vous avez rejoint {channel_name} avec succès !
 
 Voici votre lien de parrainage unique :
 {referral_link}
@@ -424,12 +424,12 @@ Veuillez rejoindre notre chaîne pour continuer : {channel_link}
 Après avoir rejoint, vous obtiendrez votre propre lien de parrainage pour commencer à gagner des récompenses aussi !
 """,
             "status_message": """
-📊 **Statut de votre Parrainage**
+📊 **Statut de vos Parrainages**
 
 👥 Parrainages Actifs : {active_referrals}/{target}
-📈 Total des Parrainages Faits : {total_referrals}
+📈 Total de Parrainages Réalisés : {total_referrals}
 🎯 Objectif : {target} parrainages
-🔥 Restants : {remaining}
+🔥 Restant : {remaining}
 📊 Progression : {progress}%
 
 {progress_bar}
@@ -448,7 +448,7 @@ Utilisez /claim pour obtenir votre récompense !
 
 {reward_message}
 
-Merci d'avoir aidé à faire grandir notre communauté ! Continuez à partager votre lien de parrainage pour aider encore plus de personnes à découvrir notre chaîne.
+Merci d'aider à faire grandir notre communauté ! Continuez à partager votre lien de parrainage pour aider encore plus de personnes à découvrir notre chaîne.
 
 Votre lien de parrainage est toujours actif : {referral_link}
 """,
@@ -462,7 +462,7 @@ Votre lien de parrainage est toujours actif : {referral_link}
 /language - Changer les paramètres de langue
 
 📋 **Comment fonctionne le système de parrainage :**
-1. Obtenez votre lien unique de parrainage depuis /start
+1. Obtenez votre lien de parrainage unique depuis /start
 2. Partagez-le avec des amis
 3. Quand les amis rejoignent en utilisant votre lien, vous obtenez du crédit
 4. Atteignez le nombre cible de parrainages pour gagner des récompenses
@@ -484,7 +484,7 @@ Après avoir rejoint, revenez et utilisez /start à nouveau.
             "error_reward_already_claimed": """
 ✅ Vous avez déjà réclamé votre récompense !
 
-Votre lien de parrainage est toujours actif si vous voulez continuer à aider la communauté à grandir : {referral_link}
+Votre lien de parrainage est toujours actif si vous voulez continuer à aider à faire grandir la communauté : {referral_link}
 """,
             "error_reward_not_available": """
 ❌ Vous n'avez pas encore atteint l'objectif de parrainage.
@@ -494,7 +494,7 @@ Progression actuelle : {active_referrals}/{target}
 Utilisez /status pour voir votre progression détaillée.
 """,
             "language_selection": """
-🌍 **Sélectionnez votre Langue / Select Your Language / Selecciona tu idioma**
+🌍 **Sélectionnez votre langue / Select Your Language / Elija su idioma**
 
 Choisissez votre langue préférée :
 """,
@@ -507,101 +507,757 @@ Tous les futurs messages seront en français.
             "progress_bar_empty": "⬜",
             "status_target_reached": "🎉 Objectif atteint ! Utilisez /claim pour obtenir votre récompense !",
             "status_no_referrals": "🚀 Commencez à partager votre lien de parrainage pour gagner des récompenses !",
-            "status_progress": "🔥 Excellente progression ! Plus que {remaining} parrainages à faire !",
+            "status_progress": "🔥 Bonne progression ! Encore {remaining} parrainages pour atteindre l'objectif !",
+        },
+        
+        SupportedLanguage.GERMAN.value: {
+            "welcome_new_user": """
+🎉 Willkommen im Empfehlungssystem!
+
+So fangen Sie an:
+1. Treten Sie zuerst unserem Kanal bei: {channel_link}
+2. Sobald Sie beigetreten sind, gebe ich Ihnen Ihren einzigartigen Empfehlungslink
+3. Teilen Sie Ihren Link mit Freunden, um Belohnungen zu verdienen!
+
+Klicken Sie auf den Link oben, um dem Kanal beizutreten, dann kommen Sie hierher zurück.
+""",
+            "welcome_existing_member": """
+🎉 Willkommen zurück! Ich sehe, dass Sie bereits Mitglied von {channel_name} sind.
+
+Hier ist Ihr einzigartiger Empfehlungslink:
+{referral_link}
+
+📋 **Ihre Mission:**
+Teilen Sie diesen Link mit Freunden und lassen Sie {target} Personen dem Kanal über Ihren Link beitreten, um Ihre Belohnung zu erhalten!
+
+🔗 **So funktioniert es:**
+1. Teilen Sie Ihren Empfehlungslink mit Freunden
+2. Wenn sie darauf klicken und dem Kanal beitreten, erhalten Sie Punkte
+3. Erreichen Sie {target} erfolgreiche Empfehlungen, um Ihre Belohnung zu beanspruchen
+
+Verwenden Sie /status, um Ihren Fortschritt jederzeit zu überprüfen!
+""",
+            "channel_joined_success": """
+✅ Großartig! Sie sind {channel_name} erfolgreich beigetreten!
+
+Hier ist Ihr einzigartiger Empfehlungslink:
+{referral_link}
+
+📋 **Ihre Mission:**
+Teilen Sie diesen Link mit Freunden und lassen Sie {target} Personen dem Kanal über Ihren Link beitreten, um Ihre Belohnung zu erhalten!
+
+🔗 **So funktioniert es:**
+1. Teilen Sie Ihren Empfehlungslink mit Freunden
+2. Wenn sie darauf klicken und dem Kanal beitreten, erhalten Sie Punkte
+3. Erreichen Sie {target} erfolgreiche Empfehlungen, um Ihre Belohnung zu beanspruchen
+
+Verwenden Sie /status, um Ihren Fortschritt jederzeit zu überprüfen!
+""",
+            "referral_welcome": """
+👋 Willkommen! Sie wurden von einem Freund empfohlen.
+
+Bitte treten Sie unserem Kanal bei, um fortzufahren: {channel_link}
+
+Nach dem Beitritt erhalten Sie Ihren eigenen Empfehlungslink, um auch Belohnungen zu verdienen!
+""",
+            "status_message": """
+📊 **Ihr Empfehlungsstatus**
+
+👥 Aktive Empfehlungen: {active_referrals}/{target}
+📈 Gesamte Empfehlungen: {total_referrals}
+🎯 Ziel: {target} Empfehlungen
+🔥 Verbleibend: {remaining}
+📊 Fortschritt: {progress}%
+
+{progress_bar}
+
+{status_text}
+""",
+            "reward_available": """
+🎉 **GLÜCKWUNSCH!** 🎉
+
+Sie haben Ihr Empfehlungsziel erreicht! Ihre Belohnung ist bereit zum Abholen.
+
+Verwenden Sie /claim, um Ihre Belohnung zu erhalten!
+""",
+            "reward_claimed": """
+🏆 **BELOHNUNG ABGEHOLT!** 🏆
+
+{reward_message}
+
+Danke, dass Sie helfen, unsere Gemeinschaft wachsen zu lassen! Teilen Sie weiterhin Ihren Empfehlungslink, um noch mehr Menschen unseren Kanal entdecken zu lassen.
+
+Ihr Empfehlungslink ist weiterhin aktiv: {referral_link}
+""",
+            "help_message": """
+🤖 **Empfehlungs-Bot Befehle**
+
+/start - Holen Sie sich Ihren Empfehlungslink und Anweisungen
+/status - Überprüfen Sie Ihren Empfehlungsfortschritt
+/claim - Fordern Sie Ihre Belohnung an (wenn das Ziel erreicht ist)
+/help - Zeigt diese Hilfemeldung an
+/language - Spracheinstellungen ändern
+
+📋 **Wie das Empfehlungssystem funktioniert:**
+1. Holen Sie sich Ihren einzigartigen Empfehlungslink mit /start
+2. Teilen Sie ihn mit Freunden
+3. Wenn Freunde über Ihren Link beitreten, erhalten Sie Punkte
+4. Erreichen Sie die Zielanzahl an Empfehlungen, um Belohnungen zu verdienen
+5. Verwenden Sie /claim, um Ihre Belohnung zu erhalten
+
+💡 **Tipps:**
+- Teilen Sie Ihren Link in Gruppen, sozialen Medien oder mit Freunden
+- Nur aktive Kanalmitglieder zählen für Ihr Ziel
+- Wenn jemand den Kanal verlässt, zählt er nicht mehr
+- Sie können Ihren Fortschritt jederzeit mit /status überprüfen
+""",
+            "error_not_channel_member": """
+❌ Sie müssen zuerst Mitglied des Kanals sein!
+
+Treten Sie hier bei: {channel_link}
+
+Kehren Sie danach zurück und verwenden Sie /start erneut.
+""",
+            "error_reward_already_claimed": """
+✅ Sie haben Ihre Belohnung bereits abgeholt!
+
+Ihr Empfehlungslink ist weiterhin aktiv, wenn Sie helfen möchten, die Gemeinschaft wachsen zu lassen: {referral_link}
+""",
+            "error_reward_not_available": """
+❌ Sie haben das Empfehlungsziel noch nicht erreicht.
+
+Aktueller Fortschritt: {active_referrals}/{target}
+
+Verwenden Sie /status, um Ihren detaillierten Fortschritt zu sehen.
+""",
+            "language_selection": """
+🌍 **Wählen Sie Ihre Sprache / Select Your Language / Elija su idioma**
+
+Wählen Sie Ihre bevorzugte Sprache:
+""",
+            "language_changed": """
+✅ Sprache auf Deutsch geändert!
+
+Alle zukünftigen Nachrichten werden auf Deutsch sein.
+""",
+            "progress_bar_full": "🟩",
+            "progress_bar_empty": "⬜",
+            "status_target_reached": "🎉 Ziel erreicht! Verwenden Sie /claim, um Ihre Belohnung zu erhalten!",
+            "status_no_referrals": "🚀 Beginnen Sie mit dem Teilen Ihres Empfehlungslinks, um Belohnungen zu verdienen!",
+            "status_progress": "🔥 Guter Fortschritt! Nur noch {remaining} Empfehlungen bis zum Ziel!",
+        },
+        
+        SupportedLanguage.ITALIAN.value: {
+            "welcome_new_user": """
+🎉 Benvenuto nel sistema di referral!
+
+Per iniziare:
+1. Prima, unisciti al nostro canale: {channel_link}
+2. Una volta iscritto, ti darò il tuo link di referral unico
+3. Condividi il tuo link con gli amici per guadagnare ricompense!
+
+Clicca sul link sopra per unirti al canale, poi torna qui.
+""",
+            "welcome_existing_member": """
+🎉 Bentornato! Vedo che sei già membro di {channel_name}.
+
+Ecco il tuo link di referral unico:
+{referral_link}
+
+📋 **La tua Missione:**
+Condividi questo link con gli amici e fai iscrivere {target} persone al canale usando il tuo link per guadagnare la tua ricompensa!
+
+🔗 **Come funziona:**
+1. Condividi il tuo link di referral con gli amici
+2. Quando cliccano e si uniscono al canale, ottieni crediti
+3. Raggiungi {target} referral di successo per richiedere la tua ricompensa
+
+Usa /status per controllare i tuoi progressi in qualsiasi momento!
+""",
+            "channel_joined_success": """
+✅ Grande! Ti sei unito con successo a {channel_name}!
+
+Ecco il tuo link di referral unico:
+{referral_link}
+
+📋 **La tua Missione:**
+Condividi questo link con gli amici e fai iscrivere {target} persone al canale usando il tuo link per guadagnare la tua ricompensa!
+
+🔗 **Come funziona:**
+1. Condividi il tuo link di referral con gli amici
+2. Quando cliccano e si uniscono al canale, ottieni crediti
+3. Raggiungi {target} referral di successo per richiedere la tua ricompensa
+
+Usa /status per controllare i tuoi progressi in qualsiasi momento!
+""",
+            "referral_welcome": """
+👋 Benvenuto! Sei stato invitato da un amico.
+
+Per favore unisciti al nostro canale per continuare: {channel_link}
+
+Dopo esserti unito, riceverai il tuo link di referral per iniziare a guadagnare ricompense anche tu!
+""",
+            "status_message": """
+📊 **Il tuo Stato dei Referral**
+
+👥 Referral Attivi: {active_referrals}/{target}
+📈 Referral Totali Effettuati: {total_referrals}
+🎯 Obiettivo: {target} referral
+🔥 Rimanenti: {remaining}
+📊 Progresso: {progress}%
+
+{progress_bar}
+
+{status_text}
+""",
+            "reward_available": """
+🎉 **CONGRATULAZIONI!** 🎉
+
+Hai raggiunto il tuo obiettivo di referral! La tua ricompensa è pronta per essere richiesta.
+
+Usa /claim per ottenere la tua ricompensa!
+""",
+            "reward_claimed": """
+🏆 **RICOMPENSA RICHIESTA!** 🏆
+
+{reward_message}
+
+Grazie per aver aiutato a far crescere la nostra comunità! Continua a condividere il tuo link di referral per aiutare ancora più persone a scoprire il nostro canale.
+
+Il tuo link di referral è ancora attivo: {referral_link}
+""",
+            "help_message": """
+🤖 **Comandi del Bot di Referral**
+
+/start - Ottieni il tuo link di referral e le istruzioni
+/status - Controlla i tuoi progressi dei referral
+/claim - Richiedi la tua ricompensa (quando l'obiettivo è raggiunto)
+/help - Mostra questo messaggio di aiuto
+/language - Cambia le impostazioni della lingua
+
+📋 **Come funziona il sistema di referral:**
+1. Ottieni il tuo link di referral unico da /start
+2. Condividilo con gli amici
+3. Quando gli amici si uniscono usando il tuo link, ottieni crediti
+4. Raggiungi il numero obiettivo di referral per guadagnare ricompense
+5. Usa /claim per ottenere la tua ricompensa
+
+💡 **Suggerimenti:**
+- Condividi il tuo link in gruppi, social media, o con amici
+- Solo i membri attivi del canale contano per il tuo obiettivo
+- Se qualcuno lascia il canale, non conterà più
+- Puoi controllare i tuoi progressi in qualsiasi momento con /status
+""",
+            "error_not_channel_member": """
+❌ Devi prima essere membro del canale!
+
+Unisciti qui: {channel_link}
+
+Dopo esserti unito, torna indietro e usa /start di nuovo.
+""",
+            "error_reward_already_claimed": """
+✅ Hai già richiesto la tua ricompensa!
+
+Il tuo link di referral è ancora attivo se vuoi continuare ad aiutare a far crescere la comunità: {referral_link}
+""",
+            "error_reward_not_available": """
+❌ Non hai ancora raggiunto l'obiettivo di referral.
+
+Progresso attuale: {active_referrals}/{target}
+
+Usa /status per vedere i tuoi progressi dettagliati.
+""",
+            "language_selection": """
+🌍 **Seleziona la tua Lingua / Select Your Language / Elija su idioma**
+
+Scegli la tua lingua preferita:
+""",
+            "language_changed": """
+✅ Lingua cambiata in Italiano!
+
+Tutti i futuri messaggi saranno in italiano.
+""",
+            "progress_bar_full": "🟩",
+            "progress_bar_empty": "⬜",
+            "status_target_reached": "🎉 Obiettivo raggiunto! Usa /claim per ottenere la tua ricompensa!",
+            "status_no_referrals": "🚀 Inizia a condividere il tuo link di referral per guadagnare ricompense!",
+            "status_progress": "🔥 Buon progresso! Solo {remaining} referral in più per raggiungere l'obiettivo!",
+        },
+        
+        SupportedLanguage.PORTUGUESE.value: {
+            "welcome_new_user": """
+🎉 Bem-vindo ao sistema de referência!
+
+Para começar:
+1. Primeiro, junte-se ao nosso canal: {channel_link}
+2. Assim que você se juntar, eu lhe darei seu link de referência único
+3. Compartilhe seu link com amigos para ganhar recompensas!
+
+Clique no link acima para se juntar ao canal, depois volte aqui.
+""",
+            "welcome_existing_member": """
+🎉 Bem-vindo de volta! Vejo que você já é membro de {channel_name}.
+
+Aqui está o seu link de referência único:
+{referral_link}
+
+📋 **Sua Missão:**
+Compartilhe este link com amigos e faça com que {target} pessoas se juntem ao canal usando seu link para ganhar sua recompensa!
+
+🔗 **Como funciona:**
+1. Compartilhe seu link de referência com amigos
+2. Quando eles clicarem e se juntarem ao canal, você ganha créditos
+3. Alcance {target} referências bem-sucedidas para reivindicar sua recompensa
+
+Use /status para verificar seu progresso a qualquer momento!
+""",
+            "channel_joined_success": """
+✅ Ótimo! Você se juntou com sucesso a {channel_name}!
+
+Aqui está o seu link de referência único:
+{referral_link}
+
+📋 **Sua Missão:**
+Compartilhe este link com amigos e faça com que {target} pessoas se juntem ao canal usando seu link para ganhar sua recompensa!
+
+🔗 **Como funciona:**
+1. Compartilhe seu link de referência com amigos
+2. Quando eles clicarem e se juntarem ao canal, você ganha créditos
+3. Alcance {target} referências bem-sucedidas para reivindicar sua recompensa
+
+Use /status para verificar seu progresso a qualquer momento!
+""",
+            "referral_welcome": """
+👋 Bem-vindo! Você foi indicado por um amigo.
+
+Por favor, junte-se ao nosso canal para continuar: {channel_link}
+
+Depois de se juntar, você receberá seu próprio link de referência para começar a ganhar recompensas também!
+""",
+            "status_message": """
+📊 **Seu Status de Referência**
+
+👥 Referências Ativas: {active_referrals}/{target}
+📈 Total de Referências Feitas: {total_referrals}
+🎯 Objetivo: {target} referências
+🔥 Restantes: {remaining}
+📊 Progresso: {progress}%
+
+{progress_bar}
+
+{status_text}
+""",
+            "reward_available": """
+🎉 **PARABÉNS!** 🎉
+
+Você atingiu seu objetivo de referência! Sua recompensa está pronta para ser reivindicada.
+
+Use /claim para obter sua recompensa!
+""",
+            "reward_claimed": """
+🏆 **RECOMPENSA REIVINDICADA!** 🏆
+
+{reward_message}
+
+Obrigado por ajudar a crescer nossa comunidade! Continue compartilhando seu link de referência para ajudar ainda mais pessoas a descobrir nosso canal.
+
+Seu link de referência ainda está ativo: {referral_link}
+""",
+            "help_message": """
+🤖 **Comandos do Bot de Referência**
+
+/start - Obtenha seu link de referência e instruções
+/status - Verifique seu progresso de referência
+/claim - Reivindique sua recompensa (quando o objetivo for atingido)
+/help - Mostra esta mensagem de ajuda
+/language - Alterar configurações de idioma
+
+📋 **Como o sistema de referência funciona:**
+1. Obtenha seu link de referência único de /start
+2. Compartilhe-o com amigos
+3. Quando amigos se juntarem usando seu link, você ganha créditos
+4. Alcance o número alvo de referências para ganhar recompensas
+5. Use /claim para obter sua recompensa
+
+💡 **Dicas:**
+- Compartilhe seu link em grupos, redes sociais ou com amigos
+- Apenas membros ativos do canal contam para seu objetivo
+- Se alguém sair do canal, eles não contarão mais
+- Você pode verificar seu progresso a qualquer momento com /status
+""",
+            "error_not_channel_member": """
+❌ Você precisa ser membro do canal primeiro!
+
+Junte-se aqui: {channel_link}
+
+Depois de se juntar, volte e use /start novamente.
+""",
+            "error_reward_already_claimed": """
+✅ Você já reivindicou sua recompensa!
+
+Seu link de referência ainda está ativo se você quiser continuar ajudando a crescer a comunidade: {referral_link}
+""",
+            "error_reward_not_available": """
+❌ Você ainda não atingiu o objetivo de referência.
+
+Progresso atual: {active_referrals}/{target}
+
+Use /status para ver seu progresso detalhado.
+""",
+            "language_selection": """
+🌍 **Selecione seu Idioma / Select Your Language / Elija su idioma**
+
+Escolha seu idioma preferido:
+""",
+            "language_changed": """
+✅ Idioma alterado para Português!
+
+Todas as futuras mensagens serão em português.
+""",
+            "progress_bar_full": "🟩",
+            "progress_bar_empty": "⬜",
+            "status_target_reached": "🎉 Objetivo atingido! Use /claim para obter sua recompensa!",
+            "status_no_referrals": "🚀 Comece a compartilhar seu link de referência para ganhar recompensas!",
+            "status_progress": "🔥 Ótimo progresso! Apenas mais {remaining} referências para atingir o objetivo!",
+        },
+        
+        SupportedLanguage.RUSSIAN.value: {
+            "welcome_new_user": """
+🎉 Добро пожаловать в систему рефералов!
+
+Чтобы начать:
+1. Сначала присоединитесь к нашему каналу: {channel_link}
+2. Как только вы присоединитесь, я дам вам уникальную реферальную ссылку
+3. Делитесь своей ссылкой с друзьями, чтобы заработать награды!
+
+Нажмите на ссылку выше, чтобы присоединиться к каналу, затем вернитесь сюда.
+""",
+            "welcome_existing_member": """
+🎉 С возвращением! Вижу, что вы уже участник {channel_name}.
+
+Вот ваша уникальная реферальная ссылка:
+{referral_link}
+
+📋 **Ваша миссия:**
+Поделитесь этой ссылкой с друзьями и приведите {target} человек в канал, используя вашу ссылку, чтобы получить награду!
+
+🔗 **Как это работает:**
+1. Поделитесь своей реферальной ссылкой с друзьями
+2. Когда они нажмут и присоединятся к каналу, вы получите кредит
+3. Достигните {target} успешных рефералов, чтобы получить награду
+
+Используйте /status, чтобы проверить свой прогресс в любое время!
+""",
+            "channel_joined_success": """
+✅ Отлично! Вы успешно присоединились к {channel_name}!
+
+Вот ваша уникальная реферальная ссылка:
+{referral_link}
+
+📋 **Ваша миссия:**
+Поделитесь этой ссылкой с друзьями и приведите {target} человек в канал, используя вашу ссылку, чтобы получить награду!
+
+🔗 **Как это работает:**
+1. Поделитесь своей реферальной ссылкой с друзьями
+2. Когда они нажмут и присоединятся к каналу, вы получите кредит
+3. Достигните {target} успешных рефералов, чтобы получить награду
+
+Используйте /status, чтобы проверить свой прогресс в любое время!
+""",
+            "referral_welcome": """
+👋 Добро пожаловать! Вас пригласил друг.
+
+Пожалуйста, присоединитесь к нашему каналу, чтобы продолжить: {channel_link}
+
+После присоединения вы получите свою собственную реферальную ссылку, чтобы тоже начать зарабатывать награды!
+""",
+            "status_message": """
+📊 **Ваш статус рефералов**
+
+👥 Активные рефералы: {active_referrals}/{target}
+📈 Всего рефералов: {total_referrals}
+🎯 Цель: {target} рефералов
+🔥 Осталось: {remaining}
+📊 Прогресс: {progress}%
+
+{progress_bar}
+
+{status_text}
+""",
+            "reward_available": """
+🎉 **ПОЗДРАВЛЯЕМ!** 🎉
+
+Вы достигли своей цели по рефералам! Ваша награда готова к получению.
+
+Используйте /claim, чтобы получить награду!
+""",
+            "reward_claimed": """
+🏆 **НАГРАДА ПОЛУЧЕНА!** 🏆
+
+{reward_message}
+
+Спасибо, что помогаете развивать наше сообщество! Продолжайте делиться своей реферальной ссылкой, чтобы помочь еще большему количеству людей открыть для себя наш канал.
+
+Ваша реферальная ссылка все еще активна: {referral_link}
+""",
+            "help_message": """
+🤖 **Команды бота рефералов**
+
+/start - Получить реферальную ссылку и инструкции
+/status - Проверить прогресс рефералов
+/claim - Получить награду (когда цель достигнута)
+/help - Показать это справочное сообщение
+/language - Изменить настройки языка
+
+📋 **Как работает система рефералов:**
+1. Получите уникальную реферальную ссылку через /start
+2. Поделитесь ею с друзьями
+3. Когда друзья присоединяются по вашей ссылке, вы получаете кредиты
+4. Достигните целевого количества рефералов, чтобы заработать награды
+5. Используйте /claim, чтобы получить награду
+
+💡 **Советы:**
+- Делитесь своей ссылкой в группах, социальных сетях или с друзьями
+- Только активные участники канала учитываются в вашей цели
+- Если кто-то покидает канал, он больше не учитывается
+- Вы можете проверить свой прогресс в любое время с помощью /status
+""",
+            "error_not_channel_member": """
+❌ Сначала вы должны быть участником канала!
+
+Присоединяйтесь здесь: {channel_link}
+
+После присоединения вернитесь и снова используйте /start.
+""",
+            "error_reward_already_claimed": """
+✅ Вы уже получили свою награду!
+
+Ваша реферальная ссылка все еще активна, если вы хотите продолжать помогать развивать сообщество: {referral_link}
+""",
+            "error_reward_not_available": """
+❌ Вы еще не достигли цели по рефералам.
+
+Текущий прогресс: {active_referrals}/{target}
+
+Используйте /status, чтобы увидеть подробный прогресс.
+""",
+            "language_selection": """
+🌍 **Выберите ваш язык / Select Your Language / Elija su idioma**
+
+Выберите предпочитаемый язык:
+""",
+            "language_changed": """
+✅ Язык изменен на русский!
+
+Все будущие сообщения будут на русском языке.
+""",
+            "progress_bar_full": "🟩",
+            "progress_bar_empty": "⬜",
+            "status_target_reached": "🎉 Цель достигнута! Используйте /claim, чтобы получить награду!",
+            "status_no_referrals": "🚀 Начните делиться своей реферальной ссылкой, чтобы заработать награды!",
+            "status_progress": "🔥 Отличный прогресс! Еще {remaining} рефералов до цели!",
+        },
+        
+        SupportedLanguage.ARABIC.value: {
+            "welcome_new_user": """
+🎉 مرحباً بك في نظام الإحالة!
+
+للبدء:
+1. أولاً، انضم إلى قناتنا: {channel_link}
+2. بمجرد انضمامك، سأعطيك رابط الإحالة الفريد الخاص بك
+3. شارك رابطك مع الأصدقاء لكسب المكافآت!
+
+انقر على الرابط أعلاه للانضمام إلى القناة، ثم عد إلى هنا.
+""",
+            "welcome_existing_member": """
+🎉 مرحباً بك مجدداً! أرى أنك عضو في {channel_name}.
+
+إليك رابط الإحالة الفريد الخاص بك:
+{referral_link}
+
+📋 **مهمتك:**
+شارك هذا الرابط مع الأصدقاء واحصل على {target} شخص للانضمام إلى القناة باستخدام رابطك لكسب مكافأتك!
+
+🔗 **كيف يعمل:**
+1. شارك رابط الإحالة الخاص بك مع الأصدقاء
+2. عندما ينقرون ويضموا القناة، تحصل على ائتمان
+3. اصل إلى {target} إحالات ناجحة للمطالبة بمكافأتك
+
+استخدم /status للتحقق من تقدمك في أي وقت!
+""",
+            "channel_joined_success": """
+✅ عظيم! لقد انضممت بنجاح إلى {channel_name}!
+
+إليك رابط الإحالة الفريد الخاص بك:
+{referral_link}
+
+📋 **مهمتك:**
+شارك هذا الرابط مع الأصدقاء واحصل على {target} شخص للانضمام إلى القناة باستخدام رابطك لكسب مكافأتك!
+
+🔗 **كيف يعمل:**
+1. شارك رابط الإحالة الخاص بك مع الأصدقاء
+2. عندما ينقرون ويضموا القناة، تحصل على ائتمان
+3. اصل إلى {target} إحالات ناجحة للمطالبة بمكافأتك
+
+استخدم /status للتحقق من تقدمك في أي وقت!
+""",
+            "referral_welcome": """
+👋 مرحباً بك! تمت دعوتك بواسطة صديق.
+
+يرجى الانضمام إلى قناتنا للمتابعة: {channel_link}
+
+بعد الانضمام، ستحصل على رابط الإحالة الخاص بك لبدء كسب المكافآت أيضاً!
+""",
+            "status_message": """
+📊 **حالة الإحالات الخاصة بك**
+
+👥 الإحالات النشطة: {active_referrals}/{target}
+📈 إجمالي الإحالات المحققة: {total_referrals}
+🎯 الهدف: {target} إحالة
+🔥 المتبقي: {remaining}
+📊 التقدم: {progress}%
+
+{progress_bar}
+
+{status_text}
+""",
+            "reward_available": """
+🎉 **تهانينا!** 🎉
+
+لقد وصلت إلى هدفك في الإحالات! مكافأتك جاهزة للمطالبة.
+
+استخدم /claim للحصول على مكافأتك!
+""",
+            "reward_claimed": """
+🏆 **تم المطالبة بالمكافأة!** 🏆
+
+{reward_message}
+
+شكراً لك على مساعدتك في نمو مجتمعنا! استمر في مشاركة رابط الإحالة الخاص بك لمساعدة المزيد من الناس على اكتشاف قناتنا.
+
+رابط الإحالة الخاص بك لا يزال نشطاً: {referral_link}
+""",
+            "help_message": """
+🤖 **أوامر بوت الإحالة**
+
+/start - احصل على رابط الإحالة الخاص بك والتعليمات
+/status - تحقق من تقدم الإحالات الخاصة بك
+/claim - اطلب مكافأتك (عند بلوغ الهدف)
+/help - إظهار رسالة المساعدة هذه
+/language - تغيير إعدادات اللغة
+
+📋 **كيف يعمل نظام الإحالة:**
+1. احصل على رابط الإحالة الفريد الخاص بك من /start
+2. شاركه مع الأصدقاء
+3. عندما ينضم الأصدقاء باستخدام رابطك، تحصل على ائتمان
+4. اصل إلى العدد المستهدف من الإحالات لكسب المكافآت
+5. استخدم /claim للحصول على مكافأتك
+
+💡 **نصائح:**
+- شارك رابطك في المجموعات، وسائل التواصل الاجتماعي، أو مع الأصدقاء
+- فقط أعضاء القناة النشطون يحسبون لهدفك
+- إذا غادر شخص ما القناة، فلن يُحسب بعد الآن
+- يمكنك التحقق من تقدمك في أي وقت باستخدام /status
+""",
+            "error_not_channel_member": """
+❌ تحتاج إلى أن تكون عضواً في القناة أولاً!
+
+انضم هنا: {channel_link}
+
+بعد الانضمام، عد واستخدم /start مرة أخرى.
+""",
+            "error_reward_already_claimed": """
+✅ لقد طلبت مكافأتك بالفعل!
+
+رابط الإحالة الخاص بك لا يزال نشطاً إذا كنت ترغب في مواصلة مساعدة نمو المجتمع: {referral_link}
+""",
+            "error_reward_not_available": """
+❌ لم تصل بعد إلى هدف الإحالات.
+
+التقدم الحالي: {active_referrals}/{target}
+
+استخدم /status لرؤية تقدمك المفصل.
+""",
+            "language_selection": """
+🌍 **اختر لغتك / Select Your Language / Elija su idioma**
+
+اختر لغتك المفضلة:
+""",
+            "language_changed": """
+✅ تم تغيير اللغة إلى العربية!
+
+جميع الرسائل المستقبلية ستكون باللغة العربية.
+""",
+            "progress_bar_full": "🟩",
+            "progress_bar_empty": "⬜",
+            "status_target_reached": "🎉 تم بلوغ الهدف! استخدم /claim للحصول على مكافأتك!",
+            "status_no_referrals": "🚀 ابدأ في مشاركة رابط الإحالة الخاص بك لكسب المكافآت!",
+            "status_progress": "🔥 تقدم رائع! فقط {remaining} إحالات أخرى للوصول إلى الهدف!",
         }
     }
     
-    @staticmethod
-    def get_message(lang: str, key: str, fallback: str = None, **kwargs) -> str:
-        """Get a message in the specified language"""
-        # Fallback to English if language not supported
-        if lang not in MultilingualMessages.MESSAGES:
-            lang = SupportedLanguage.ENGLISH.value
+    def get_message(self, language: str, key: str, fallback: str = None, **kwargs) -> str:
+        """Get a message in the specified language with optional formatting"""
+        # Get the language messages, fallback to English if not found
+        lang_messages = self.MESSAGES.get(language, self.MESSAGES[SupportedLanguage.ENGLISH.value])
         
-        # Fallback to English message if key not found
-        if key not in MultilingualMessages.MESSAGES[lang]:
-            if key in MultilingualMessages.MESSAGES[SupportedLanguage.ENGLISH.value]:
-                message = MultilingualMessages.MESSAGES[SupportedLanguage.ENGLISH.value][key]
-            elif fallback:
-                message = fallback
-            else:
-                return f"Message key '{key}' not found"
-        else:
-            message = MultilingualMessages.MESSAGES[lang][key]
+        # Get the message template, fallback to English if not found
+        message = lang_messages.get(key)
+        if not message and fallback:
+            return fallback
+        elif not message:
+            # Try to get from English as final fallback
+            english_messages = self.MESSAGES[SupportedLanguage.ENGLISH.value]
+            message = english_messages.get(key, f"Missing message: {key}")
         
-        # Format the message with provided arguments
+        # Format the message with provided kwargs
         try:
             return message.format(**kwargs)
         except KeyError as e:
-            logger.warning(f"Missing format key {e} for message {key} in language {lang}")
+            # If formatting fails, return the message without formatting
+            logger.warning(f"Failed to format message {key} for language {language}: {e}")
             return message
     
-    @staticmethod
-    def get_available_languages() -> Dict[str, str]:
-        """Get list of available languages with their names"""
+    def get_available_languages(self) -> Dict[str, str]:
+        """Get available languages with their names"""
         return {
-            SupportedLanguage.ENGLISH.value: "🇺🇸 English",
-            SupportedLanguage.SPANISH.value: "🇪🇸 Español", 
-            SupportedLanguage.FRENCH.value: "🇫🇷 Français",
-            SupportedLanguage.GERMAN.value: "🇩🇪 Deutsch",
-            SupportedLanguage.ITALIAN.value: "🇮🇹 Italiano",
-            SupportedLanguage.PORTUGUESE.value: "🇵🇹 Português",
-            SupportedLanguage.RUSSIAN.value: "🇷🇺 Русский",
-            SupportedLanguage.ARABIC.value: "🇸🇦 العربية",
-            SupportedLanguage.CHINESE.value: "🇨🇳 中文",
-            SupportedLanguage.JAPANESE.value: "🇯🇵 日本語",
-            SupportedLanguage.KOREAN.value: "🇰🇷 한국어",
-            SupportedLanguage.HINDI.value: "🇮🇳 हिन्दी",
-            SupportedLanguage.TURKISH.value: "🇹🇷 Türkçe",
-            SupportedLanguage.DUTCH.value: "🇳🇱 Nederlands",
-            SupportedLanguage.POLISH.value: "🇵🇱 Polski",
+            SupportedLanguage.ENGLISH.value: "English 🇬🇧",
+            SupportedLanguage.SPANISH.value: "Español 🇪🇸",
+            SupportedLanguage.FRENCH.value: "Français 🇫🇷",
+            SupportedLanguage.GERMAN.value: "Deutsch 🇩🇪",
+            SupportedLanguage.ITALIAN.value: "Italiano 🇮🇹",
+            SupportedLanguage.PORTUGUESE.value: "Português 🇵🇹",
+            SupportedLanguage.RUSSIAN.value: "Русский 🇷🇺",
+            SupportedLanguage.ARABIC.value: "العربية 🇸🇦",
+            SupportedLanguage.CHINESE.value: "中文 🇨🇳",
+            SupportedLanguage.JAPANESE.value: "日本語 🇯🇵",
+            SupportedLanguage.KOREAN.value: "한국어 🇰🇷",
+            SupportedLanguage.HINDI.value: "हिन्दी 🇮🇳",
+            SupportedLanguage.TURKISH.value: "Türkçe 🇹🇷",
+            SupportedLanguage.DUTCH.value: "Nederlands 🇳🇱",
+            SupportedLanguage.POLISH.value: "Polski 🇵🇱",
         }
 
 class LanguageManager:
-    """Manage user language preferences"""
+    """Manage user language preferences using in-memory storage for now"""
     
     def __init__(self, database):
         self.db = database
+        self._user_languages = {}  # In-memory storage for user languages
         self._init_language_table()
     
     def _init_language_table(self):
-        """Initialize language preferences table"""
+        """Initialize language preferences (using in-memory storage)"""
         try:
-            with self.db.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS user_languages (
-                        user_id INTEGER PRIMARY KEY,
-                        language_code TEXT DEFAULT 'en',
-                        detected_language TEXT,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (user_id) REFERENCES users (user_id)
-                    )
-                ''')
-                conn.commit()
-                logger.info("Language table initialized successfully")
+            logger.info("Language manager initialized with in-memory storage")
         except Exception as e:
-            logger.error(f"Error initializing language table: {e}")
+            logger.error(f"Error initializing language manager: {e}")
     
     def set_user_language(self, user_id: int, language_code: str, detected: bool = False) -> bool:
         """Set user's preferred language"""
         try:
-            with self.db.get_connection() as conn:
-                cursor = conn.cursor()
-                if detected:
-                    cursor.execute('''
-                        INSERT OR REPLACE INTO user_languages 
-                        (user_id, language_code, detected_language, updated_at)
-                        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-                    ''', (user_id, language_code, language_code))
-                else:
-                    cursor.execute('''
-                        INSERT OR REPLACE INTO user_languages 
-                        (user_id, language_code, updated_at)
-                        VALUES (?, ?, CURRENT_TIMESTAMP)
-                    ''', (user_id, language_code))
-                conn.commit()
-                return True
+            self._user_languages[user_id] = language_code
+            return True
         except Exception as e:
             logger.error(f"Error setting user language: {e}")
             return False
@@ -609,16 +1265,10 @@ class LanguageManager:
     def get_user_language(self, user_id: int) -> str:
         """Get user's preferred language"""
         try:
-            with self.db.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('SELECT language_code FROM user_languages WHERE user_id = ?', (user_id,))
-                result = cursor.fetchone()
-                if result:
-                    return result[0]
+            return self._user_languages.get(user_id, SupportedLanguage.ENGLISH.value)
         except Exception as e:
             logger.error(f"Error getting user language: {e}")
-        
-        return SupportedLanguage.ENGLISH.value
+            return SupportedLanguage.ENGLISH.value
     
     def detect_and_set_language(self, user_id: int, telegram_user, message_text: str = None) -> str:
         """Detect and set user language based on available signals"""
