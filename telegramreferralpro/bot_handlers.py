@@ -597,92 +597,232 @@ class BotHandlers:
         if not result:
             return
 
-        # Only process events for our target channel
-        if str(result.chat.id) != self.config.channel_id:
-            return
-
         user_id = result.new_chat_member.user.id
+        chat_id = str(result.chat.id)
         old_status = result.old_chat_member.status
         new_status = result.new_chat_member.status
 
-        # User joined the channel
-        if old_status in ['left', 'kicked'] and new_status in ['member', 'administrator', 'creator']:
-            logger.info(f"User {user_id} joined the channel")
+        # Handle channel join/leave
+        if chat_id == self.config.channel_id:
+            # User joined the channel
+            if old_status in ['left', 'kicked'] and new_status in ['member', 'administrator', 'creator']:
+                await self._handle_channel_join(user_id)
 
-            # Update database and check for referral
-            referrer_id = self.referral_system.handle_user_joined_channel(user_id)
+            # User left the channel
+            elif old_status in ['member', 'administrator', 'creator'] and new_status in ['left', 'kicked']:
+                await self._handle_channel_leave(user_id)
 
-            # Send welcome message if user exists in our system
-            user = self.db.get_user(user_id)
-            if user:
-                try:
-                    # Get or create unique invite link for this user
-                    stored_invite_link = self.db.get_invite_link(user_id)
-                    if stored_invite_link:
-                        referral_link = stored_invite_link
-                    else:
-                        # Create new unique invite link
-                        referral_code = user['referral_code']
-                        invite_link_name = f"Referral-{referral_code}"
-                        referral_link = await self.telegram_utils.create_unique_invite_link(name=invite_link_name)
+        # Handle group join/leave (if group is configured)
+        elif self.config.group_id and chat_id == self.config.group_id:
+            # Prepare user info for group events
+            new_user = result.new_chat_member.user
+            username = getattr(new_user, 'username', None)
+            full_name = ' '.join(filter(None, [getattr(new_user, 'first_name', ''), getattr(new_user, 'last_name', '')])).strip() or None
 
-                        # Store the invite link in database
-                        self.db.store_invite_link(user_id, referral_code, referral_link, invite_link_name)
+            # User joined the group
+            if old_status in ['left', 'kicked'] and new_status in ['member', 'administrator', 'creator']:
+                await self._handle_group_join(user_id, username=username, full_name=full_name)
 
-                    chat_info = await self.telegram_utils.get_chat_info()
-                    channel_name = chat_info['title'] if chat_info else "our channel"
-                    # Multilingual welcome message
-                    user_lang = self.language_manager.get_user_language(user_id)
-                    # Get current referral target
-                    referral_target = self.referral_system.get_active_referral_target()
-                    message = self.multilingual_messages.get_message(
-                        user_lang,
-                        "channel_joined_success",
-                        channel_name=channel_name,
-                        referral_link=referral_link,
-                        target=referral_target
-                    )
+            # User left the group
+            elif old_status in ['member', 'administrator', 'creator'] and new_status in ['left', 'kicked']:
+                logger.info(f"User {user_id} left the group")
+
+    async def _handle_channel_join(self, user_id: int) -> None:
+        """Handle user joining the channel"""
+        logger.info(f"User {user_id} joined the channel")
+
+        # Update database and check for referral
+        referrer_id = self.referral_system.handle_user_joined_channel(user_id)
+
+        # Send welcome or group join message if user exists in our system
+        user = self.db.get_user(user_id)
+        if user:
+            try:
+                user_lang = self.language_manager.get_user_language(user_id)
+
+                # If group is configured, ask user to join the group first
+                if self.config.group_id and self.config.group_username:
+                    group_link = f"https://t.me/{self.config.group_username}"
+                    message = f"""✅ Welcome to our channel!
+
+👥 **Next Step:** Please join our group to get started!
+
+[Join our group: {self.config.group_username}]({group_link})
+
+Once you join the group, I'll send you your referral link and you can start earning rewards!"""
                     try:
-                        await self.telegram_utils.send_message_safe(user_id, message)
+                        await self.telegram_utils.send_message_safe(user_id, message, parse_mode=ParseMode.MARKDOWN)
                     except Exception as e:
-                        logger.warning(f"Markdown parsing failed for channel joined message: {e}. Sending without formatting.")
+                        logger.warning(f"Markdown parsing failed for group join request message: {e}. Sending without formatting.")
                         await self.telegram_utils.send_message_safe(user_id, message)
+                else:
+                    # No group configured, send referral link message directly
+                    await self._send_channel_join_welcome(user, user_lang, referrer_id)
 
-                    # Notify referrer if applicable
-                    if referrer_id:
-                        referrer = self.db.get_user(referrer_id)
-                        if referrer:
-                            progress = self.referral_system.get_referral_progress(referrer_id)
-                            if progress['target_reached'] and not referrer['reward_claimed']:
-                                notify_message = self.messages.REWARD_AVAILABLE
-                            else:
-                                notify_message = (
-                                    "🎉 Great news! Someone joined using your referral link!\n\n"
-                                    f"Your progress: {progress['active_referrals']}/{progress['target']}"
-                                )
-                            await self.telegram_utils.send_message_safe(referrer_id, notify_message)
-                except Exception as e:
-                    logger.error(f"Error sending welcome or notify message for user {user_id}: {e}")
+            except Exception as e:
+                logger.error(f"Error handling channel join for user {user_id}: {e}")
 
-        # User left the channel
-        elif old_status in ['member', 'administrator', 'creator'] and new_status in ['left', 'kicked']:
-            logger.info(f"User {user_id} left the channel")
+    async def _handle_channel_leave(self, user_id: int) -> None:
+        """Handle user leaving the channel"""
+        logger.info(f"User {user_id} left the channel")
 
-            # Update database and notify affected referrers
-            affected_referrers = self.referral_system.handle_user_left_channel(user_id)
+        # Update database and notify affected referrers
+        affected_referrers = self.referral_system.handle_user_left_channel(user_id)
 
-            # Notify referrers about the change
-            for ref_id in affected_referrers:
+        # Notify referrers about the change
+        for ref_id in affected_referrers:
+            try:
+                progress = self.referral_system.get_referral_progress(ref_id)
+                notify_message = (
+                    "📉 One of your referrals left the channel.\n\n"
+                    f"Your current progress: {progress['active_referrals']}/{progress['target']}"
+                )
+                await self.telegram_utils.send_message_safe(ref_id, notify_message)
+            except Exception as e:
+                logger.error(f"Error notifying referrer {ref_id}: {e}")
+
+    async def _handle_group_join(self, user_id: int, username: str = None, full_name: str = None) -> None:
+        """Handle user joining the group
+
+        If the user is registered in the DB, send the referral DM. If not,
+        attempt to create a DB entry and DM them. If the DM fails (user hasn't
+        started the bot), post a message in the group instructing them to
+        message the bot to receive their referral link.
+        """
+        logger.info(f"User {user_id} joined the group (username={username})")
+
+        # Try to find user in DB
+        user = self.db.get_user(user_id)
+
+        # If user not found, create minimal record so they have a referral code
+        if not user:
+            try:
+                referral_code = self.referral_system.generate_referral_code(user_id)
+                self.db.add_user(
+                    user_id=user_id,
+                    username=username or '',
+                    first_name=full_name or '',
+                    referral_code=referral_code
+                )
+                user = self.db.get_user(user_id)
+            except Exception as e:
+                logger.warning(f"Could not create DB user for {user_id}: {e}")
+
+        # Attempt to send DM with referral link
+        if user:
+            try:
+                user_lang = self.language_manager.get_user_language(user_id)
+                sent = await self._send_channel_join_welcome(user, user_lang, user.get('referred_by'))
+
+                if not sent:
+                    # DM failed; fall back to sending a group message with a button
+                    try:
+                        # Determine bot username (try get_me if attribute missing)
+                        bot_username = getattr(self.telegram_utils.bot, 'username', None)
+                        if not bot_username:
+                            try:
+                                me = await self.telegram_utils.bot.get_me()
+                                bot_username = getattr(me, 'username', None)
+                            except Exception:
+                                bot_username = None
+
+                        if username:
+                            mention = f"@{username}"
+                        elif full_name:
+                            mention = full_name
+                        else:
+                            mention = 'there'
+
+                        # Use user's referral code if available
+                        referral_code = user.get('referral_code', '')
+
+                        # Build deep link to open private chat with start param
+                        if bot_username and referral_code:
+                            url = f"https://t.me/{bot_username}?start={referral_code}"
+                            keyboard = [[InlineKeyboardButton("Get my referral link", url=url)]]
+                            reply_markup = InlineKeyboardMarkup(keyboard)
+                            group_msg = (
+                                f"Welcome to the EarnPro Elites, {mention}! 🚀\n"
+                                "Your journey to building a network starts here. 🌐\n"
+                                "Tap 'Get my referral link' below to start the bot and claim your unique link.\n"
+                                "#YourReferralsYourNetwork"
+                            )
+                            await self.telegram_utils.bot.send_message(self.config.group_id, group_msg, reply_markup=reply_markup)
+                        else:
+                            # Fallback textual message when button/username is not available
+                            botref = f" @{bot_username}" if bot_username else ''
+                            group_msg = (
+                                f"Welcome to the EarnPro Elites, {mention}! 🚀\n"
+                                "Your journey to building a network starts here. 🌐\n"
+                                f"To receive your referral link, please message the bot{botref} and type /start.\n"
+                                "#YourReferralsYourNetwork"
+                            )
+                            await self.telegram_utils.bot.send_message(self.config.group_id, group_msg)
+                    except Exception as e:
+                        logger.error(f"Failed to send fallback group message for user {user_id}: {e}")
+            except Exception as e:
+                logger.error(f"Error processing group join for user {user_id}: {e}")
+
+    async def _send_channel_join_welcome(self, user, user_lang: str, referrer_id: int = None) -> bool:
+        """Send welcome message with referral link after user joins. Returns True if DM was sent."""
+        if not user:
+            return False
+
+        try:
+            user_id = user['user_id']
+            # Get or create unique invite link for this user
+            stored_invite_link = self.db.get_invite_link(user_id)
+            if stored_invite_link:
+                referral_link = stored_invite_link
+            else:
+                # Create new unique invite link
+                referral_code = user['referral_code']
+                invite_link_name = f"Referral-{referral_code}"
+                referral_link = await self.telegram_utils.create_unique_invite_link(name=invite_link_name)
+
+                # Store the invite link in database
+                self.db.store_invite_link(user_id, referral_code, referral_link, invite_link_name)
+
+            chat_info = await self.telegram_utils.get_chat_info()
+            channel_name = chat_info['title'] if chat_info else "our channel"
+
+            # Get current referral target
+            referral_target = self.referral_system.get_active_referral_target()
+            message = self.multilingual_messages.get_message(
+                user_lang,
+                "channel_joined_success",
+                channel_name=channel_name,
+                referral_link=referral_link,
+                target=referral_target
+            )
+            # Try to send, preserving boolean result
+            sent = await self.telegram_utils.send_message_safe(user_id, message)
+            if not sent:
+                # Try sending without formatting as fallback
                 try:
-                    progress = self.referral_system.get_referral_progress(ref_id)
-                    notify_message = (
-                        "📉 One of your referrals left the channel.\n\n"
-                        f"Your current progress: {progress['active_referrals']}/{progress['target']}"
-                    )
-                    await self.telegram_utils.send_message_safe(ref_id, notify_message)
-                except Exception as e:
-                    logger.error(f"Error notifying referrer {ref_id}: {e}")
-    
+                    sent = await self.telegram_utils.send_message_safe(user_id, message)
+                except Exception:
+                    sent = False
+
+            # Notify referrer if applicable
+            if referrer_id:
+                referrer = self.db.get_user(referrer_id)
+                if referrer:
+                    progress = self.referral_system.get_referral_progress(referrer_id)
+                    if progress['target_reached'] and not referrer['reward_claimed']:
+                        notify_message = self.messages.REWARD_AVAILABLE
+                    else:
+                        notify_message = (
+                            "🎉 Great news! Someone joined using your referral link!\n\n"
+                            f"Your progress: {progress['active_referrals']}/{progress['target']}"
+                        )
+                    await self.telegram_utils.send_message_safe(referrer_id, notify_message)
+
+            return bool(sent)
+        except Exception as e:
+            logger.error(f"Error sending welcome message: {e}")
+            return False
+
     def get_handlers(self) -> list:
         """Get all bot handlers"""
         return [

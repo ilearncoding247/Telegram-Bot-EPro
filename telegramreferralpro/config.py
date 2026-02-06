@@ -24,6 +24,8 @@ class BotConfig:
     supabase_webhook_url: Optional[str] = None
     supabase_webhook_secret: Optional[str] = None
     port: int = 8000
+    group_id: Optional[str] = None
+    group_username: Optional[str] = None
 
 def load_config() -> BotConfig:
     """Load configuration from environment variables"""
@@ -59,5 +61,7 @@ def load_config() -> BotConfig:
         supabase_webhook_url=os.getenv("SUPABASE_WEBHOOK_URL"),
         supabase_webhook_secret=os.getenv("SUPABASE_WEBHOOK_SECRET"),
         webhook_url=os.getenv("WEBHOOK_URL"),
-        port=int(os.getenv("PORT", "8000"))
+        port=int(os.getenv("PORT", "8000")),
+        group_id=os.getenv("GROUP_ID"),
+        group_username=os.getenv("GROUP_USERNAME")
     )
